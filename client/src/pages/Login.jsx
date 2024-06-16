@@ -3,9 +3,10 @@ import { Route, useNavigate } from 'react-router-dom';
 import {useForm} from 'react-hook-form'
 import Textbox from '../components/Textbox';
 import Button from '../components/Button';
+import { useSelector } from 'react-redux';
 
 const Login = () => {
-  const user = ""
+  const {user} = useSelector((state) => state.auth);
   const {
     register,
     handleSubmit,
@@ -16,7 +17,8 @@ const Login = () => {
 
   const submitHandler = async (data)=> {
     console.log("submit")
-  }
+  };
+  console.log(user);
   useEffect(() => {
     user && navigate("/dashboard")
   },[user]);
@@ -79,7 +81,7 @@ const Login = () => {
                 error={errors.password ? errors.password.message : ""}
               />
               
-              <span className='text-sm  hover:text-blue-600 hover:unserline cursor-pointer'>Forget Password</span>
+              <span className='text-sm  hover:text-blue-800 hover:unserline cursor-pointer'>Forget Password</span>
               <Button
                 type ="submit"
                 label="Submit"
