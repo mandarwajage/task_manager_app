@@ -24,7 +24,7 @@ const Users = () => {
 
   const userActionHandler = async () => {
     try{
-      const result = await UserAction({
+      const result = await userAction({
         isActive: !selected?.isActive,
         id: selected?._id,
       });
@@ -43,6 +43,20 @@ const Users = () => {
   };
 
   const deleteHandler = async () => {
+    try{
+      const result = await deleteUser(selected)
+
+      refetch();
+
+      toast.success(result.data.message);
+      setSelected(null);
+      setTimeout(() => {
+        setOpenDialog(false);
+      },500);
+    }catch(error){
+      console.log(error);
+      toast.error(error?.data?.message || error.error);
+    }
   };
 
   const deleteClick = (id) => {
