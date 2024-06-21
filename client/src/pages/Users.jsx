@@ -48,7 +48,7 @@ const Users = () => {
 
       refetch();
 
-      toast.success(result.data.message);
+      toast.success("Deleted Successfully");
       setSelected(null);
       setTimeout(() => {
         setOpenDialog(false);
