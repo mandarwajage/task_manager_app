@@ -1,18 +1,20 @@
-import React, { useState } from "react";
-import { BiMessageAltDetail } from "react-icons/bi";
+import clsx from "clsx";
+import { useState } from "react";
 import {
-  MdAttachFile,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
   MdKeyboardDoubleArrowUp,
 } from "react-icons/md";
 import { toast } from "sonner";
-import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../../utils";
-import clsx from "clsx";
-import { FaList } from "react-icons/fa";
-import UserInfo from "../UserInfo";
-import Button from "../Button";
-import ConfirmatioDialog from "../Dialogs";
+import { useTrashTastMutation } from "../redux/slices/api/taskApiSlice.js";
+import { BGS, PRIOTITYSTYELS, TASK_TYPE, formatDate } from "../utils/index.js";
+// import Button from "./Button.jsx";
+// import ConfirmatioDialog from "./ConfirmationDialog.jsx";
+// import UserInfo from "./UserInfo.jsx";
+// import TaskAssets from "./tasks/TaskAssets.jsx";
+// import TaskColor from "./tasks/TaskColor.jsx";
+import { ConfirmatioDialog, UserInfo, Button } from "./index";
+import { AddTask, TaskAssets, TaskColor } from "./tasks";
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -23,17 +25,42 @@ const ICONS = {
 const Table = ({ tasks }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [openEdit, setOpenEdit] = useState(false);
+
+  const [deleteTask] = useTrashTastMutation();
 
   const deleteClicks = (id) => {
     setSelected(id);
     setOpenDialog(true);
   };
 
-  const deleteHandler = () => {};
+  const editClickHandler = (el) => {
+    setSelected(el);
+    setOpenEdit(true);
+  };
+
+  const deleteHandler = async () => {
+    try {
+      const res = await deleteTask({
+        id: selected,
+        isTrashed: "trash",
+      }).unwrap();
+
+      toast.success(res?.message);
+
+      setTimeout(() => {
+        setOpenDialog(false);
+        window.location.reload();
+      }, 500);
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.data?.message || err.error);
+    }
+  };
 
   const TableHeader = () => (
-    <thead className='w-full border-b border-gray-300'>
-      <tr className='w-full text-black  text-left'>
+    <thead className='w-full border-b border-gray-300 dark:border-gray-600'>
+      <tr className='w-full text-black dark:text-white  text-left'>
         <th className='py-2'>Task Title</th>
         <th className='py-2'>Priority</th>
         <th className='py-2 line-clamp-1'>Created At</th>
@@ -47,9 +74,7 @@ const Table = ({ tasks }) => {
     <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-300/10'>
       <td className='py-2'>
         <div className='flex items-center gap-2'>
-          <div
-            className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage])}
-          />
+          <TaskColor className={TASK_TYPE[task.stage]} />
           <p className='w-full line-clamp-2 text-base text-black'>
             {task?.title}
           </p>
@@ -74,20 +99,11 @@ const Table = ({ tasks }) => {
       </td>
 
       <td className='py-2'>
-        <div className='flex items-center gap-3'>
-          <div className='flex gap-1 items-center text-sm text-gray-600'>
-            <BiMessageAltDetail />
-            <span>{task?.activities?.length}</span>
-          </div>
-          <div className='flex gap-1 items-center text-sm text-gray-600 dark:text-gray-400'>
-            <MdAttachFile />
-            <span>{task?.assets?.length}</span>
-          </div>
-          <div className='flex gap-1 items-center text-sm text-gray-600 dark:text-gray-400'>
-            <FaList />
-            <span>0/{task?.subTasks?.length}</span>
-          </div>
-        </div>
+        <TaskAssets
+          activities={task?.activities?.length}
+          subTasks={task?.subTasks?.length}
+          assets={task?.assets?.length}
+        />
       </td>
 
       <td className='py-2'>
@@ -111,6 +127,7 @@ const Table = ({ tasks }) => {
           className='text-blue-600 hover:text-blue-500 sm:px-0 text-sm md:text-base'
           label='Edit'
           type='button'
+          onClick={() => editClickHandler(task)}
         />
 
         <Button
@@ -122,6 +139,7 @@ const Table = ({ tasks }) => {
       </td>
     </tr>
   );
+
   return (
     <>
       <div className='bg-white  px-2 md:px-4 pt-4 pb-9 shadow-md rounded'>
@@ -137,11 +155,17 @@ const Table = ({ tasks }) => {
         </div>
       </div>
 
-      {/* TODO */}
       <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}
         onClick={deleteHandler}
+      />
+
+      <AddTask
+        open={openEdit}
+        setOpen={setOpenEdit}
+        task={selected}
+        key={new Date().getTime()}
       />
     </>
   );

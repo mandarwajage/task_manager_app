@@ -1,16 +1,15 @@
 import { Dialog } from "@headlessui/react";
 import clsx from "clsx";
 import { FaQuestion } from "react-icons/fa";
-import ModalWrapper from "./ModalWrapper";
-import Button from "./Button";
+import { Button, ModalWrapper } from "./";
 
 export default function ConfirmatioDialog({
   open,
   setOpen,
   msg,
-  setMsg = () => {},
   onClick = () => {},
   type = "delete",
+  setMsg = () => {},
   setType = () => {},
 }) {
   const closeDialog = () => {

@@ -4,6 +4,7 @@ export const formatDate = (date) => {
   const day = date.getDate();
   const year = date.getFullYear();
 
+  // Format the date as "MM dd, yyyy"
   const formattedDate = `${day}-${month}-${year}`;
 
   return formattedDate;
@@ -33,6 +34,19 @@ export function getInitials(fullName) {
 
   return initialsStr;
 }
+
+export const updateURL = ({ searchTerm, navigate, location }) => {
+  const params = new URLSearchParams();
+
+  if (searchTerm) {
+    params.set("search", searchTerm);
+  }
+
+  const newURL = `${location?.pathname}?${params.toString()}`;
+  navigate(newURL, { replace: true });
+
+  return newURL;
+};
 
 export const PRIOTITYSTYELS = {
   high: "text-red-600",

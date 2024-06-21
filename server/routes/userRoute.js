@@ -1,5 +1,4 @@
 import express from "express";
-import { isAdminRoute, protectRoute } from "../middlewave/authMiddlewave.js";
 import {
   activateUserProfile,
   changeUserPassword,
@@ -12,6 +11,7 @@ import {
   registerUser,
   updateUserProfile,
 } from "../controllers/userController.js";
+import { isAdminRoute, protectRoute } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -25,8 +25,7 @@ router.get("/notifications", protectRoute, getNotificationsList);
 router.put("/profile", protectRoute, updateUserProfile);
 router.put("/read-noti", protectRoute, markNotificationRead);
 router.put("/change-password", protectRoute, changeUserPassword);
-
-// //   FOR ADMIN ONLY - ADMIN ROUTES
+//   FOR ADMIN ONLY - ADMIN ROUTES
 router
   .route("/:id")
   .put(protectRoute, isAdminRoute, activateUserProfile)
