@@ -56,21 +56,23 @@ const duplicateTask = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { userId } = req.user;
 
-    const task = await Task.findById(id);
+    const task = await Task.findById(id).lean();
 
-    //alert users of the task
+    if (!task) {
+      return res.status(404).json({ status: false, message: "Task not found." });
+    }
+
+    // Alert users of the task
     let text = "New task has been assigned to you";
-    if (team.team?.length > 1) {
+    if (task.team?.length > 1) {
       text = text + ` and ${task.team?.length - 1} others.`;
     }
 
-    text =
-      text +
-      ` The task priority is set a ${
-        task.priority
-      } priority, so check and act accordingly. The task date is ${new Date(
-        task.date
-      ).toDateString()}. Thank you!!!`;
+    text += ` The task priority is set at ${
+      task.priority
+    } priority, so check and act accordingly. The task date is ${new Date(
+      task.date
+    ).toDateString()}. Thank you!!!`;
 
     const activity = {
       type: "assigned",
@@ -78,17 +80,17 @@ const duplicateTask = asyncHandler(async (req, res) => {
       by: userId,
     };
 
-    const newTask = await Task.create({
+    const newTask = new Task({
       ...task,
       title: "Duplicate - " + task.title,
+      _id: undefined, // Ensure a new ID is generated
+      activities: [activity], // Initialize activities array with the new activity
     });
 
-    newTask.team = task.team;
-    newTask.subTasks = task.subTasks;
-    newTask.assets = task.assets;
-    newTask.priority = task.priority;
-    newTask.stage = task.stage;
-    newTask.activities = activity;
+    // Copy the arrays properly
+    newTask.team = [...task.team];
+    newTask.subTasks = [...task.subTasks];
+    newTask.assets = [...task.assets];
 
     await newTask.save();
 
@@ -102,9 +104,11 @@ const duplicateTask = asyncHandler(async (req, res) => {
       .status(200)
       .json({ status: true, message: "Task duplicated successfully." });
   } catch (error) {
-    return res.status(400).json({ status: false, message: error.message });
+    console.error(error); // Log the error for debugging
+    return res.status(400).json({ status: false, message: "An error occurred while duplicating the task." });
   }
 });
+
 
 const updateTask = asyncHandler(async (req, res) => {
   const { id } = req.params;
